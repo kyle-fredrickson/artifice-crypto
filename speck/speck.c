@@ -1,7 +1,3 @@
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "speck.h"
 
 #define MAX64 -1UL
@@ -41,9 +37,10 @@ void add1(uint64_t * in, size_t length)
 void key_schedule(uint64_t *key, uint64_t *key_schedule)
 {
     uint64_t l[3] = {key[1], key[2], key[3]};
+    int i;
     key_schedule[0] = key[0];
 
-    for (int i = 0; i < ROUNDS - 1; i++)
+    for (i = 0; i < ROUNDS - 1; i++)
     {
         l[i % 3] = (key_schedule[i] + rotate(l[i % 3], -8)) ^ (uint64_t)(i);
         key_schedule[i + 1] = rotate(key_schedule[i], 3) ^ l[i % 3];
@@ -62,16 +59,18 @@ void enc_round(uint64_t *in, uint64_t key)
 
 void speck_encrypt(uint64_t *in, uint64_t *out, uint64_t *key)
 {
+    uint64_t *keys = speck_malloc(ROUNDS * sizeof(uint64_t));
+    int i;
+
     out[0] = in[0];
     out[1] = in[1];
-    uint64_t *keys = malloc(ROUNDS * sizeof(uint64_t));
     key_schedule(key, keys);
 
-    for (int i = 0; i < ROUNDS; i++)
+    for (i = 0; i < ROUNDS; i++)
     {
         enc_round(out, keys[i]);
     }
-    free(keys);
+    speck_free(keys);
 }
 
 void dec_round(uint64_t *in, uint64_t key)
@@ -85,24 +84,27 @@ void dec_round(uint64_t *in, uint64_t key)
 
 void speck_decrypt(uint64_t *in, uint64_t *out, uint64_t *key)
 {
+    uint64_t *keys = speck_malloc(ROUNDS * sizeof(uint64_t));
+    int i;
+
     out[0] = in[0];
     out[1] = in[1];
-    uint64_t *keys = malloc(ROUNDS * sizeof(uint64_t));
     key_schedule(key, keys);
 
-    for (int i = 0; i < ROUNDS; i++)
+    for (i = 0; i < ROUNDS; i++)
     {
         dec_round(out, keys[i]);
     }
-    free(keys);
+    speck_free(keys);
 }
 
 void speck_ctr(uint64_t *in, uint64_t *out, size_t pt_length, uint64_t *key, uint64_t *nonce)
 {
-    uint64_t* pad = malloc(2 * sizeof(uint64_t));
+    uint64_t* pad = speck_malloc(2 * sizeof(uint64_t));
     uint64_t local_nonce[2] = {nonce[0], nonce[1]};
+    int i;
 
-    for (int i = 0; i < pt_length; i+=2)
+    for (i = 0; i < pt_length; i+=2)
     {
         speck_encrypt(local_nonce, pad, key);
 
@@ -111,6 +113,6 @@ void speck_ctr(uint64_t *in, uint64_t *out, size_t pt_length, uint64_t *key, uin
 
         add1(local_nonce, 2);
     }
-    free(pad);
+    speck_free(pad);
 }
 
