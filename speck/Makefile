@@ -19,6 +19,9 @@ test_kernel: main_kernel
 	sudo insmod specktest.ko
 	sudo rmmod specktest.ko
 
+infer:
+	make clean; infer-capture -- make; infer-analyze -- make
+
 clean:
 	rm *.o
 	rm main
