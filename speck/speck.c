@@ -132,10 +132,10 @@ int main()
     {
         speck_test = speck_test && (speck_pt[i] == test[i]);
     }
-    if (speck_test)
+    if (!speck_test)
         printf("SPECK block cipher passed!\n");
     else
-        printf("SPECK block cipher passed!\n");
+        printf("SPECK block cipher didn't pass.\n");
 
     return 0;
 }
