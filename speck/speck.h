@@ -4,6 +4,7 @@
 #ifndef __KERNEL__
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
 #define speck_malloc(X) malloc(X)
 #define speck_free(X) free(X)
 #else
