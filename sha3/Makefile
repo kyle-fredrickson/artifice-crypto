@@ -1,7 +1,7 @@
 ALL: main
 
 ccflags-y += -I$(src)/include/
-specktest-objs := main_kernel.o sha3.o
+shatest-objs := main_kernel.o sha3.o
 obj-m += shatest.o
 
 main:

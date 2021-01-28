@@ -33,8 +33,9 @@ static void keccak_f(uint64_t s[25])
 {
     int i, j;
     uint64_t t, bc[5];
+    int round = 0;
 
-    for(int round = 0; round < ROUNDS; round++) {
+    for(round = 0; round < ROUNDS; round++) {
 
         // theta
         for(i = 0; i < 5; i++)
@@ -73,6 +74,10 @@ void sha3_256(uint8_t* message, uint64_t length, uint8_t* digest)
     int64_t bit_len = length * 8 + 2; // length in bytes to length in bits (+2 pad min)
     int64_t pad_len = ((-bit_len % R) + R) % R;
     int64_t num_blocks = (bit_len + pad_len) / 64;
+    int64_t num_p = 0;
+    uint64_t* P = NULL;
+    uint64_t* d = NULL;
+    int i, j;
 
     uint64_t* padded_message = sha_calloc(num_blocks, sizeof(uint64_t));
     memcpy(padded_message, message, length);
@@ -83,21 +88,21 @@ void sha3_256(uint8_t* message, uint64_t length, uint8_t* digest)
     padded_message[bit_len / 64] |= 0x1UL << (bit_len % 64);
     padded_message[(bit_len + pad_len - 1) / 64] |= 0x1UL << ((bit_len + pad_len - 1) % 64);
 
-    int64_t num_p = num_blocks / 17;
-    uint64_t* P = sha_calloc(num_p * 25, sizeof(uint64_t));
+    num_p = num_blocks / 17;
+    P = sha_calloc(num_p * 25, sizeof(uint64_t));
 
-    for (int i = 0; i < num_p; i++)
+    for (i = 0; i < num_p; i++)
     {
         memcpy(P + i * 25, padded_message + i * 17, 17 * 8);
     }
 
     sha_free(padded_message);
 
-    uint64_t* d = sha_calloc(25, sizeof(uint64_t));
+    d = sha_calloc(25, sizeof(uint64_t));
 
-    for (int i = 0; i < num_p; i++)
+    for (i = 0; i < num_p; i++)
     {
-        for (int j = 0; j < 25; j++)
+        for (j = 0; j < 25; j++)
         {
             d[j] ^= *(P + 25 * i + j);
         }
